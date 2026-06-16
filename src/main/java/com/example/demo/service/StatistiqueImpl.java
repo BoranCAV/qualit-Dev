@@ -1,31 +1,44 @@
 package com.example.demo.service;
 
 import com.example.demo.data.Voiture;
-import org.springframework.stereotype.Service;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@Service
-public class StatistiqueImpl implements Statistique{
+@SpringBootTest
+public class StatistiqueImplTest {
 
-    List<Voiture> voitures = new ArrayList<Voiture>();
+    StatistiqueImpl statistique;
 
-    @Override
-    public void ajouter(Voiture voiture) {
-        voitures.add(voiture);
+    @BeforeEach
+    void init() {
+        statistique = new StatistiqueImpl();
     }
 
-    @Override
-    public Echantillon prixMoyen() throws ArithmeticException {
-        int prixTotal = 0;
-        int nombreDeVoitures = 0;
-        Iterator<Voiture> iterator = voitures.iterator();
-        while(iterator.hasNext()){
-            prixTotal = prixTotal + iterator.next().getPrix();
-            nombreDeVoitures++;
-        }
-        return new Echantillon(nombreDeVoitures, prixTotal/nombreDeVoitures);
+    @Test
+    void ajouterUneVoiture() {
+        statistique.ajouter(new Voiture("Renault", 10000));
+        Echantillon resultat = statistique.prixMoyen();
+        assertEquals(1, resultat.getNombreDeVoitures());
+        assertEquals(10000, resultat.getPrixMoyen());
+    }
+
+    @Test
+    void prixMoyenPlusieursVoitures() {
+        statistique.ajouter(new Voiture("Renault", 10000));
+        statistique.ajouter(new Voiture("Peugeot", 20000));
+        statistique.ajouter(new Voiture("Ferrari", 30000));
+
+        Echantillon resultat = statistique.prixMoyen();
+        assertEquals(3, resultat.getNombreDeVoitures());
+        assertEquals(20000, resultat.getPrixMoyen());
+    }
+
+    @Test
+    void prixMoyenAvecListeVide() {
+        assertThrows(ArithmeticException.class, () -> statistique.prixMoyen());
     }
 }
